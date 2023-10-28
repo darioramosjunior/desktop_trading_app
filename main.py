@@ -3,6 +3,10 @@ import sys
 from watchlist_tab import WatchlistTab
 from analytics_tab import AnalyticsTab
 from news_tab import NewsTab
+from database import Database
+
+database = Database()
+database.create_watchlist_table()
 
 
 class MainWindow(QMainWindow):
