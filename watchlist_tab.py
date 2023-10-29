@@ -8,27 +8,38 @@ class WatchlistTab(QWidget):
         super().__init__()
         layout = QVBoxLayout()
 
+        coin_list = []
+
         columns = Columns()
+
         coin1 = WatchlistItem()
-        coin1.set_row_id(1)
+        coin_list.append(coin1)
         coin2 = WatchlistItem()
-        coin2.set_row_id(2)
+        coin_list.append(coin2)
         coin3 = WatchlistItem()
-        coin3.set_row_id(3)
+        coin_list.append(coin3)
         coin4 = WatchlistItem()
-        coin4.set_row_id(4)
+        coin_list.append(coin4)
         coin5 = WatchlistItem()
-        coin5.set_row_id(5)
+        coin_list.append(coin5)
         coin6 = WatchlistItem()
-        coin6.set_row_id(6)
+        coin_list.append(coin6)
         coin7 = WatchlistItem()
-        coin7.set_row_id(7)
+        coin_list.append(coin7)
         coin8 = WatchlistItem()
-        coin8.set_row_id(8)
+        coin_list.append(coin8)
         coin9 = WatchlistItem()
-        coin9.set_row_id(9)
+        coin_list.append(coin9)
         coin10 = WatchlistItem()
-        coin10.set_row_id(10)
+        coin_list.append(coin10)
+
+        # Set unique id for each row or coin
+        for row_id, coin in enumerate(coin_list):
+            coin.set_row_id(row_id+1)
+
+        # Load row data from the database
+        for coin in coin_list:
+            coin.load_row_data()
 
         layout.addWidget(columns)
         layout.addWidget(coin1)

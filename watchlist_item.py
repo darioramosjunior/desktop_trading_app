@@ -90,8 +90,8 @@ class WatchlistItem(QWidget):
         self.position_size.setText(formatted_pos_size)
 
         database = Database()
-        data_to_insert = (self.row_id, self.coin.text(), float(self.watch_price.text()), float(self.trigger_price.text()), port_size,
-                          var_percentage, cut_percentage, pos_size )
+        data_to_insert = (self.row_id, self.coin.text(), float(self.watch_price.text()),
+                          float(self.trigger_price.text()), port_size, var_percentage, cut_percentage, pos_size)
 
         database.cursor.execute("INSERT OR REPLACE INTO watchlist (id, coin_name, watch_price, trigger_price, "
                                 "port_size, var_percentage, cut_percentage, position_size) VALUES (?,?,?,?,?,?,?,?)",
@@ -114,6 +114,22 @@ class WatchlistItem(QWidget):
 
     def set_row_id(self, row_id):
         self.row_id = row_id
+
+    def load_row_data(self):
+        database = Database()
+        database.cursor.execute("SELECT * FROM watchlist WHERE id=?", (self.row_id,))
+        row_data = database.cursor.fetchall()
+        database.connection.close()
+
+        if row_data:
+            row_data = row_data[0]
+            self.coin.setText(row_data[1])
+            self.watch_price.setText(f"{row_data[2]}")
+            self.trigger_price.setText(f"{row_data[3]}")
+            self.port_size.setText(f"{row_data[4]}")
+            self.var_percentage.setText(f"{row_data[5]}")
+            self.cut_percentage.setText(f"{row_data[6]}")
+            self.position_size.setText(f"{row_data[7]}")
 
 
 class Columns(QWidget):
