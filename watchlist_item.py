@@ -1,5 +1,6 @@
 from PyQt6.QtCore import Qt
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton
+from database import Database
 
 
 class WatchlistItem(QWidget):
@@ -8,6 +9,7 @@ class WatchlistItem(QWidget):
         super().__init__()
         layout = QHBoxLayout()
         self.setLayout(layout)
+        self.row_id = 0
 
         self.coin = QLineEdit()
         self.coin.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -87,6 +89,18 @@ class WatchlistItem(QWidget):
         formatted_pos_size = "{:.2f} USD".format(pos_size)
         self.position_size.setText(formatted_pos_size)
 
+        database = Database()
+        data_to_insert = (self.row_id, self.coin.text(), float(self.watch_price.text()), float(self.trigger_price.text()), port_size,
+                          var_percentage, cut_percentage, pos_size )
+
+        database.cursor.execute("INSERT OR REPLACE INTO watchlist (id, coin_name, watch_price, trigger_price, "
+                                "port_size, var_percentage, cut_percentage, position_size) VALUES (?,?,?,?,?,?,?,?)",
+                                data_to_insert)
+        database.connection.commit()
+        database.connection.close()
+
+        print(self.row_id, type(self.row_id))
+
     def clear_row(self):
         self.coin.setText("")
         self.watch_price.setText("")
@@ -97,6 +111,9 @@ class WatchlistItem(QWidget):
         self.cut_percentage.setText("")
         self.position_size.setText("USD")
         print("Clear Row")
+
+    def set_row_id(self, row_id):
+        self.row_id = row_id
 
 
 class Columns(QWidget):
