@@ -50,7 +50,7 @@ class WatchlistItem(QWidget):
 
         # Connections
         calculate_button.clicked.connect(self.calculate_pos_size)
-        clear_button.clicked.connect(self.clear_row)
+        clear_button.clicked.connect(self.delete_row)
 
         layout.addWidget(self.coin)
         layout.addWidget(self.watch_price)
@@ -101,7 +101,15 @@ class WatchlistItem(QWidget):
 
         print(self.row_id, type(self.row_id))
 
-    def clear_row(self):
+    def delete_row(self):
+        database = Database()
+        database.cursor.execute("DELETE from watchlist WHERE id=?", (self.row_id,))
+        database.connection.commit()
+        database.connection.close()
+
+        self.set_default_values()
+
+    def set_default_values(self):
         self.coin.setText("")
         self.watch_price.setText("")
         self.trigger_condition.setCurrentIndex(0)
@@ -129,7 +137,7 @@ class WatchlistItem(QWidget):
             self.port_size.setText(f"{row_data[4]}")
             self.var_percentage.setText(f"{row_data[5]}")
             self.cut_percentage.setText(f"{row_data[6]}")
-            self.position_size.setText(f"{row_data[7]}")
+            self.position_size.setText(f"{row_data[7]} USD")
 
 
 class Columns(QWidget):
