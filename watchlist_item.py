@@ -87,6 +87,7 @@ class WatchlistItem(QWidget):
         calculate_button.clicked.connect(self.calculate_pos_size)
         calculate_button.clicked.connect(self.update_current_price)
         clear_button.clicked.connect(self.delete_row)
+        self.coin.textChanged.connect(self.update_current_price)
 
         self.show()
 
