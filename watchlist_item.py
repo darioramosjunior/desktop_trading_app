@@ -47,7 +47,8 @@ class WatchlistItem(QWidget):
         self.position_size.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.position_size.setStyleSheet("border: 1px solid black;")
 
-        calculate_button = QPushButton("Calculate")
+        self.calculate_button = QPushButton("Calculate")
+        self.calculate_button.setEnabled(False)
         clear_button = QPushButton("Clear")
 
         layout.addWidget(self.coin)
@@ -60,7 +61,7 @@ class WatchlistItem(QWidget):
         layout.addWidget(self.var_percentage)
         layout.addWidget(self.cut_percentage)
         layout.addWidget(self.position_size)
-        layout.addWidget(calculate_button)
+        layout.addWidget(self.calculate_button)
         layout.addWidget(clear_button)
 
         layout.setStretchFactor(self.coin, 1)
@@ -73,23 +74,33 @@ class WatchlistItem(QWidget):
         layout.setStretchFactor(self.var_percentage, 1)
         layout.setStretchFactor(self.cut_percentage, 1)
         layout.setStretchFactor(self.position_size, 1)
-        layout.setStretchFactor(calculate_button, 1)
+        layout.setStretchFactor(self.calculate_button, 1)
         layout.setStretchFactor(clear_button, 1)
 
         # Add a lock for a thread-safe data update
         self.data_lock = threading.Lock()
 
         # Connections
-        timer = QTimer(self)
-        timer.timeout.connect(self.update_current_price)
-        timer.start(10000)
+        self.timer = QTimer(self)
+        self.timer.timeout.connect(self.update_current_price)
+        self.timer.start(10000)
 
-        calculate_button.clicked.connect(self.calculate_pos_size)
-        calculate_button.clicked.connect(self.update_current_price)
+        self.calculate_button.clicked.connect(self.calculate_pos_size)
         clear_button.clicked.connect(self.delete_row)
+
+        # Update_current_price connections
+        self.calculate_button.clicked.connect(self.update_current_price)
         self.coin.textChanged.connect(self.update_current_price)
+
+        # Toggle_status connections
         self.current_price.textChanged.connect(self.toggle_status)
         self.trigger_condition.currentIndexChanged.connect(self.toggle_status)
+        self.watch_price.textChanged.connect(self.toggle_status)
+
+        # Toggle_calculate_button connections
+        self.port_size.textChanged.connect(self.toggle_calculate_button)
+        self.cut_percentage.textChanged.connect(self.toggle_calculate_button)
+        self.var_percentage.textChanged.connect(self.toggle_calculate_button)
 
         self.show()
 
@@ -102,17 +113,18 @@ class WatchlistItem(QWidget):
         formatted_pos_size = "{:.2f} USD".format(pos_size)
         self.position_size.setText(formatted_pos_size)
 
-        database = Database()
-        data_to_insert = (self.row_id, self.coin.text(), float(self.watch_price.text()),
-                          float(self.trigger_price.text()), port_size, var_percentage, cut_percentage, pos_size)
+        condition = self.all_fields_filled()
+        # All fields must be filled before storing row in the database
+        if condition:
+            database = Database()
+            data_to_insert = (self.row_id, self.coin.text(), float(self.watch_price.text()),
+                              float(self.trigger_price.text()), port_size, var_percentage, cut_percentage, pos_size)
 
-        database.cursor.execute("INSERT OR REPLACE INTO watchlist (id, coin_name, watch_price, trigger_price, "
-                                "port_size, var_percentage, cut_percentage, position_size) VALUES (?,?,?,?,?,?,?,?)",
-                                data_to_insert)
-        database.connection.commit()
-        database.connection.close()
-
-        print(self.row_id, type(self.row_id))
+            database.cursor.execute("INSERT OR REPLACE INTO watchlist (id, coin_name, watch_price, trigger_price, "
+                                    "port_size, var_percentage, cut_percentage, position_size) VALUES (?,?,?,?,?,?,?,?)",
+                                    data_to_insert)
+            database.connection.commit()
+            database.connection.close()
 
     def delete_row(self):
         database = Database()
@@ -177,24 +189,45 @@ class WatchlistItem(QWidget):
         thread.start()
 
     def toggle_status(self):
-        watch_price = float(self.watch_price.text())
-        current_price = float(self.current_price.text())
-        trigger_condition = self.trigger_condition.currentIndex()
+        # watch price must not be empty before performing comparison
+        if self.watch_price.text().strip():
+            watch_price = float(self.watch_price.text())
+            current_price = float(self.current_price.text())
+            trigger_condition = self.trigger_condition.currentIndex()
 
-        if trigger_condition == 0:
-            if current_price >= watch_price:
-                self.status.setText("ALERT")
-                self.status.setStyleSheet("background-color: green; color: white;")
+            if trigger_condition == 0:
+                if current_price >= watch_price:
+                    self.status.setText("ALERT")
+                    self.status.setStyleSheet("background-color: green; color: white;")
+                else:
+                    self.status.setText("WAIT")
+                    self.status.setStyleSheet("background-color: lightgray; color: black")
             else:
-                self.status.setText("WAIT")
-                self.status.setStyleSheet("background-color: lightgray; color: black")
+                if current_price <= watch_price:
+                    self.status.setText("ALERT")
+                    self.status.setStyleSheet("background-color: green; color: white;")
+                else:
+                    self.status.setText("WAIT")
+                    self.status.setStyleSheet("background-color: lightgray; color: black")
         else:
-            if current_price <= watch_price:
-                self.status.setText("ALERT")
-                self.status.setStyleSheet("background-color: green; color: white;")
-            else:
-                self.status.setText("WAIT")
-                self.status.setStyleSheet("background-color: lightgray; color: black")
+            pass
+
+    def toggle_calculate_button(self):
+        condition = self.port_size.text().strip and self.var_percentage.text().strip and \
+                    self.cut_percentage.text().strip()
+        if condition:
+            self.calculate_button.setEnabled(True)
+        else:
+            self.calculate_button.setEnabled(False)
+
+    def all_fields_filled(self):
+        condition = self.coin.text().strip() and self.watch_price.text().strip() and self.trigger_price.text().strip() \
+                    and self.port_size.text().strip() and self.var_percentage.text().strip() and \
+                    self.cut_percentage.text().strip()
+        if condition:
+            return True
+        else:
+            return False
 
 
 class Columns(QWidget):
