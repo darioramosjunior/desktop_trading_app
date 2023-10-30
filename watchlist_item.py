@@ -25,13 +25,13 @@ class WatchlistItem(QWidget):
         self.trigger_price = QLineEdit()
         self.trigger_price.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.current_price = QLabel("N/A")
+        self.current_price = QLineEdit("N/A")
+        self.current_price.setReadOnly(True)
         self.current_price.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.current_price.setStyleSheet("border: 0.5px solid black;")
 
-        self.status = QLabel("ALERT")  # TO-DO: To set dynamically
+        self.status = QLabel("WAIT")  # TO-DO: To set dynamically
         self.status.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.status.setStyleSheet("border: 0.5px solid black;")
+        self.status.setStyleSheet("background-color: lightgray;")
 
         self.port_size = QLineEdit()
         self.port_size.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -88,6 +88,8 @@ class WatchlistItem(QWidget):
         calculate_button.clicked.connect(self.update_current_price)
         clear_button.clicked.connect(self.delete_row)
         self.coin.textChanged.connect(self.update_current_price)
+        self.current_price.textChanged.connect(self.toggle_status)
+        self.trigger_condition.currentIndexChanged.connect(self.toggle_status)
 
         self.show()
 
@@ -173,6 +175,26 @@ class WatchlistItem(QWidget):
         # Thread is needed in order for the request does not disrupt the app
         thread = threading.Thread(target=self.fetch_coin_data)
         thread.start()
+
+    def toggle_status(self):
+        watch_price = float(self.watch_price.text())
+        current_price = float(self.current_price.text())
+        trigger_condition = self.trigger_condition.currentIndex()
+
+        if trigger_condition == 0:
+            if current_price >= watch_price:
+                self.status.setText("ALERT")
+                self.status.setStyleSheet("background-color: green; color: white;")
+            else:
+                self.status.setText("WAIT")
+                self.status.setStyleSheet("background-color: lightgray; color: black")
+        else:
+            if current_price <= watch_price:
+                self.status.setText("ALERT")
+                self.status.setStyleSheet("background-color: green; color: white;")
+            else:
+                self.status.setText("WAIT")
+                self.status.setStyleSheet("background-color: lightgray; color: black")
 
 
 class Columns(QWidget):
