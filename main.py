@@ -53,6 +53,6 @@ class MainWindow(QMainWindow):
 
 
 if __name__ == "__main__":
-    trading_app = QApplication(sys.argv)
+    app = QApplication(sys.argv)
     main_window = MainWindow()
-    sys.exit(trading_app.exec())
+    sys.exit(app.exec())

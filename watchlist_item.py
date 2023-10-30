@@ -1,6 +1,8 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QComboBox, QLineEdit, QPushButton
 from database import Database
+from coin_prices_script import get_coins_data
+import threading
 
 
 class WatchlistItem(QWidget):
@@ -23,7 +25,7 @@ class WatchlistItem(QWidget):
         self.trigger_price = QLineEdit()
         self.trigger_price.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.current_price = QLabel()
+        self.current_price = QLabel("N/A")
         self.current_price.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.current_price.setStyleSheet("border: 0.5px solid black;")
 
@@ -47,10 +49,6 @@ class WatchlistItem(QWidget):
 
         calculate_button = QPushButton("Calculate")
         clear_button = QPushButton("Clear")
-
-        # Connections
-        calculate_button.clicked.connect(self.calculate_pos_size)
-        clear_button.clicked.connect(self.delete_row)
 
         layout.addWidget(self.coin)
         layout.addWidget(self.watch_price)
@@ -77,6 +75,18 @@ class WatchlistItem(QWidget):
         layout.setStretchFactor(self.position_size, 1)
         layout.setStretchFactor(calculate_button, 1)
         layout.setStretchFactor(clear_button, 1)
+
+        # Add a lock for a thread-safe data update
+        self.data_lock = threading.Lock()
+
+        # Connections
+        timer = QTimer(self)
+        timer.timeout.connect(self.update_current_price)
+        timer.start(10000)
+
+        calculate_button.clicked.connect(self.calculate_pos_size)
+        calculate_button.clicked.connect(self.update_current_price)
+        clear_button.clicked.connect(self.delete_row)
 
         self.show()
 
@@ -138,6 +148,30 @@ class WatchlistItem(QWidget):
             self.var_percentage.setText(f"{row_data[5]}")
             self.cut_percentage.setText(f"{row_data[6]}")
             self.position_size.setText(f"{row_data[7]} USD")
+
+    def fetch_coin_data(self):
+        try:
+            coin_data = get_coins_data()
+            self.update_current_price_thread(coin_data)
+        except:
+            self.current_price.setText("ERROR")
+
+    def update_current_price_thread(self, coin_data):
+        coin_list = [each['symbol'] for each in coin_data]
+        if self.coin.text() in coin_list:
+            for each in coin_data:
+                if each['symbol'] == self.coin.text():
+                    print(each['symbol'], "-", each['price'])
+                    self.current_price.setText(each['price'])
+        elif self.coin.text() == "":
+            self.current_price.setText("N/A")
+        else:
+            self.current_price.setText("NOT FOUND")
+
+    def update_current_price(self):
+        # Thread is needed in order for the request does not disrupt the app
+        thread = threading.Thread(target=self.fetch_coin_data)
+        thread.start()
 
 
 class Columns(QWidget):
