@@ -29,7 +29,7 @@ class WatchlistItem(QWidget):
 
         self.status = QLabel("WAIT")  # TO-DO: To set dynamically
         self.status.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.status.setStyleSheet("background-color: lightgray;")
+        self.status.setStyleSheet("background-color: #808080;")
 
         self.port_size = QLineEdit()
         self.port_size.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -232,6 +232,13 @@ class Columns(QWidget):
         super().__init__()
         layout = QHBoxLayout()
         self.setLayout(layout)
+
+        self.setStyleSheet("""QWidget {
+                background-color: #2B2B2B;
+                color: #FFFFFF;
+                border: none;
+                font-weight: bold;
+            }""")
 
         column1_label = QLabel("Coin Name")
         column1_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
