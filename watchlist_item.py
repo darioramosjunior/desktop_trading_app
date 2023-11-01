@@ -25,6 +25,7 @@ class WatchlistItem(QWidget):
         self.current_price = QLineEdit("")
         self.current_price.setReadOnly(True)
         self.current_price.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.current_price.setToolTip("999999 - means either coin is invalid or there's a network issue")
 
         self.status = QLabel("WAIT")  # TO-DO: To set dynamically
         self.status.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -72,13 +73,10 @@ class WatchlistItem(QWidget):
         layout.setStretchFactor(self.calculate_button, 1)
         layout.setStretchFactor(clear_button, 1)
 
-        # Add a lock for a thread-safe data update
-        self.data_lock = threading.Lock()
-
         # Connections
         self.timer = QTimer(self)
         self.timer.timeout.connect(self.update_current_price)
-        self.timer.start(10000)
+        self.timer.start(30000)
 
         self.calculate_button.clicked.connect(self.calculate_pos_size)
         clear_button.clicked.connect(self.delete_row)
@@ -112,12 +110,12 @@ class WatchlistItem(QWidget):
         # All fields must be filled before storing row in the database
         if condition:
             database = Database()
-            data_to_insert = (self.row_id, self.coin.text(), float(self.watch_price.text()), port_size, var_percentage,
-                              cut_percentage, pos_size)
+            data_to_insert = (self.row_id, self.coin.text(), float(self.watch_price.text()),
+                              self.trigger_condition.currentIndex(), port_size, var_percentage, cut_percentage, pos_size)
 
-            database.cursor.execute("INSERT OR REPLACE INTO watchlist (id, coin_name, watch_price, port_size, "
-                                    "var_percentage, cut_percentage, position_size) VALUES (?,?,?,?,?,?,?)",
-                                    data_to_insert)
+            database.cursor.execute("INSERT OR REPLACE INTO watchlist (id, coin_name, watch_price, condition,"
+                                    " port_size, " "var_percentage, cut_percentage, position_size) "
+                                    "VALUES (?,?,?,?,?,?,?,?)", data_to_insert)
             database.connection.commit()
             database.connection.close()
 
@@ -155,10 +153,12 @@ class WatchlistItem(QWidget):
             row_data = row_data[0]
             self.coin.setText(row_data[1])
             self.watch_price.setText(f"{row_data[2]}")
+            self.trigger_condition.setCurrentIndex(row_data[3])
             self.port_size.setText(f"{row_data[4]}")
             self.var_percentage.setText(f"{row_data[5]}")
             self.cut_percentage.setText(f"{row_data[6]}")
-            self.position_size.setText(f"{row_data[7]} USD")
+            formatted_pos_size = "{:.2f} USD".format(row_data[7])
+            self.position_size.setText(formatted_pos_size)
 
     def fetch_coin_data(self):
         try:
@@ -202,10 +202,10 @@ class WatchlistItem(QWidget):
             else:
                 if current_price <= watch_price:
                     self.status.setText("ALERT")
-                    self.status.setStyleSheet("background-color: green; color: white;")
+                    self.status.setStyleSheet("background-color: red; color: white;")
                 else:
                     self.status.setText("WAIT")
-                    self.status.setStyleSheet("background-color: gray; color: black")
+                    self.status.setStyleSheet("background-color: lightgray; color: black")
         else:
             pass
 

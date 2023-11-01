@@ -12,7 +12,7 @@ class Database:
                 id INTEGER PRIMARY KEY,
                 coin_name TEXT,
                 watch_price REAL,
-                trigger_price REAL,
+                condition INTEGER,
                 port_size REAL,
                 var_percentage REAL,
                 cut_percentage REAL,

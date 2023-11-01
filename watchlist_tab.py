@@ -9,7 +9,6 @@ class WatchlistTab(QWidget):
         layout = QVBoxLayout()
 
         coin_list = []
-
         columns = Columns()
 
         coin1 = WatchlistItem()
