@@ -133,6 +133,9 @@ class WatchlistItem(QWidget):
         self.coin.setText("")
         self.watch_price.setText("")
         self.trigger_condition.setCurrentIndex(0)
+        self.current_price.setText("")
+        self.status.setText("WAIT")
+        self.status.setStyleSheet("background-color: lightgray; color: black")
         self.port_size.setText("")
         self.var_percentage.setText("")
         self.cut_percentage.setText("")
@@ -162,7 +165,7 @@ class WatchlistItem(QWidget):
             coin_data = get_coins_data()
             self.update_current_price_thread(coin_data)
         except:
-            self.current_price.setText("ERROR")
+            self.current_price.setText("99999999")
 
     def update_current_price_thread(self, coin_data):
         coin_list = [each['symbol'] for each in coin_data]
