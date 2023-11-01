@@ -166,15 +166,15 @@ class WatchlistItem(QWidget):
 
     def update_current_price_thread(self, coin_data):
         coin_list = [each['symbol'] for each in coin_data]
-        if self.coin.text() in coin_list:
+        if self.coin.text().strip().upper() in coin_list:
             for each in coin_data:
-                if each['symbol'] == self.coin.text():
+                if each['symbol'] == self.coin.text().strip().upper():
                     print(each['symbol'], "-", each['price'])
                     self.current_price.setText(each['price'])
-        elif self.coin.text() == "":
+        elif self.coin.text().strip().upper() == "":
             self.current_price.setText("")
         else:
-            self.current_price.setText("NOT FOUND")
+            self.current_price.setText("99999999")
 
     def update_current_price(self):
         # Thread is needed in order for the request does not disrupt the app
