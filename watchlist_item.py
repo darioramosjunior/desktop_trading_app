@@ -22,9 +22,6 @@ class WatchlistItem(QWidget):
         self.trigger_condition = QComboBox()
         self.trigger_condition.addItems(["> / =", "< / ="])
 
-        self.trigger_price = QLineEdit()
-        self.trigger_price.setAlignment(Qt.AlignmentFlag.AlignCenter)
-
         self.current_price = QLineEdit("")
         self.current_price.setReadOnly(True)
         self.current_price.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -54,7 +51,6 @@ class WatchlistItem(QWidget):
         layout.addWidget(self.coin)
         layout.addWidget(self.watch_price)
         layout.addWidget(self.trigger_condition)
-        layout.addWidget(self.trigger_price)
         layout.addWidget(self.current_price)
         layout.addWidget(self.status)
         layout.addWidget(self.port_size)
@@ -67,7 +63,6 @@ class WatchlistItem(QWidget):
         layout.setStretchFactor(self.coin, 1)
         layout.setStretchFactor(self.watch_price, 1)
         layout.setStretchFactor(self.trigger_condition, 1)
-        layout.setStretchFactor(self.trigger_price, 1)
         layout.setStretchFactor(self.current_price, 1)
         layout.setStretchFactor(self.status, 1)
         layout.setStretchFactor(self.port_size, 1)
@@ -117,11 +112,11 @@ class WatchlistItem(QWidget):
         # All fields must be filled before storing row in the database
         if condition:
             database = Database()
-            data_to_insert = (self.row_id, self.coin.text(), float(self.watch_price.text()),
-                              float(self.trigger_price.text()), port_size, var_percentage, cut_percentage, pos_size)
+            data_to_insert = (self.row_id, self.coin.text(), float(self.watch_price.text()), port_size, var_percentage,
+                              cut_percentage, pos_size)
 
-            database.cursor.execute("INSERT OR REPLACE INTO watchlist (id, coin_name, watch_price, trigger_price, "
-                                    "port_size, var_percentage, cut_percentage, position_size) VALUES (?,?,?,?,?,?,?,?)",
+            database.cursor.execute("INSERT OR REPLACE INTO watchlist (id, coin_name, watch_price, port_size, "
+                                    "var_percentage, cut_percentage, position_size) VALUES (?,?,?,?,?,?,?)",
                                     data_to_insert)
             database.connection.commit()
             database.connection.close()
@@ -138,7 +133,6 @@ class WatchlistItem(QWidget):
         self.coin.setText("")
         self.watch_price.setText("")
         self.trigger_condition.setCurrentIndex(0)
-        self.trigger_price.setText("")
         self.port_size.setText("")
         self.var_percentage.setText("")
         self.cut_percentage.setText("")
@@ -158,7 +152,6 @@ class WatchlistItem(QWidget):
             row_data = row_data[0]
             self.coin.setText(row_data[1])
             self.watch_price.setText(f"{row_data[2]}")
-            self.trigger_price.setText(f"{row_data[3]}")
             self.port_size.setText(f"{row_data[4]}")
             self.var_percentage.setText(f"{row_data[5]}")
             self.cut_percentage.setText(f"{row_data[6]}")
@@ -179,7 +172,7 @@ class WatchlistItem(QWidget):
                     print(each['symbol'], "-", each['price'])
                     self.current_price.setText(each['price'])
         elif self.coin.text() == "":
-            self.current_price.setText("N/A")
+            self.current_price.setText("")
         else:
             self.current_price.setText("NOT FOUND")
 
@@ -222,9 +215,8 @@ class WatchlistItem(QWidget):
             self.calculate_button.setEnabled(False)
 
     def all_fields_filled(self):
-        condition = self.coin.text().strip() and self.watch_price.text().strip() and self.trigger_price.text().strip() \
-                    and self.port_size.text().strip() and self.var_percentage.text().strip() and \
-                    self.cut_percentage.text().strip()
+        condition = self.coin.text().strip() and self.watch_price.text().strip() and self.port_size.text().strip() and \
+                    self.var_percentage.text().strip() and self.cut_percentage.text().strip()
         if condition:
             return True
         else:
@@ -244,8 +236,6 @@ class Columns(QWidget):
         column2_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         column3_label = QLabel("Condition")
         column3_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        column4_label = QLabel("Trigger Price")
-        column4_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         column5_label = QLabel("Current Price")
         column5_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         column6_label = QLabel("Status")
@@ -266,7 +256,6 @@ class Columns(QWidget):
         layout.addWidget(column1_label)
         layout.addWidget(column2_label)
         layout.addWidget(column3_label)
-        layout.addWidget(column4_label)
         layout.addWidget(column5_label)
         layout.addWidget(column6_label)
         layout.addWidget(column7_label)
@@ -279,7 +268,6 @@ class Columns(QWidget):
         layout.setStretchFactor(column1_label, 1)
         layout.setStretchFactor(column2_label, 1)
         layout.setStretchFactor(column3_label, 1)
-        layout.setStretchFactor(column4_label, 1)
         layout.setStretchFactor(column5_label, 1)
         layout.setStretchFactor(column6_label, 1)
         layout.setStretchFactor(column7_label, 1)
