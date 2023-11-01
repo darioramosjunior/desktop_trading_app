@@ -25,7 +25,7 @@ class WatchlistItem(QWidget):
         self.trigger_price = QLineEdit()
         self.trigger_price.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-        self.current_price = QLineEdit("N/A")
+        self.current_price = QLineEdit("")
         self.current_price.setReadOnly(True)
         self.current_price.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
@@ -189,8 +189,9 @@ class WatchlistItem(QWidget):
         thread.start()
 
     def toggle_status(self):
+
         # watch price must not be empty before performing comparison
-        if self.watch_price.text().strip():
+        if self.watch_price.text().strip() and self.current_price.text().strip():
             watch_price = float(self.watch_price.text())
             current_price = float(self.current_price.text())
             trigger_condition = self.trigger_condition.currentIndex()
@@ -208,12 +209,12 @@ class WatchlistItem(QWidget):
                     self.status.setStyleSheet("background-color: green; color: white;")
                 else:
                     self.status.setText("WAIT")
-                    self.status.setStyleSheet("background-color: lightgray; color: black")
+                    self.status.setStyleSheet("background-color: gray; color: black")
         else:
             pass
 
     def toggle_calculate_button(self):
-        condition = self.port_size.text().strip and self.var_percentage.text().strip and \
+        condition = self.port_size.text().strip() and self.var_percentage.text().strip() and \
                     self.cut_percentage.text().strip()
         if condition:
             self.calculate_button.setEnabled(True)
