@@ -1,4 +1,7 @@
 # desktop_trading_app
+
+Technologies used: PyQt6, sqlite3, Binance API & Python pandas.
+
 This project is desktop trading app for cryptocurrency trading where there are three tabs. 
 The first tab is the Watchlist tab where the user can monitor & set alerts for specific coins & calculate position size as well.
 The second one is the News tab where the user can check if there are important news releases for the day that can affect the market volatility, e.g., US CPI releases, etc.
